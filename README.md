@@ -10,3 +10,16 @@
     <img src="https://img.shields.io/badge/license-MIT-critical">
     <a href="https://www.linkedin.com/in/eric-rodriguez-3a402811b/"><img src="https://img.shields.io/badge/linkedIn-connect-4777AF"></a>
 </p>
+
+# Quick Start
+
+```sh
+make
+./bin/mint data -p 8080
+```
+
+# Usage
+
+```sh
+mint DATA_PATH -p PORT_NUMBER
+```
