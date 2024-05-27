@@ -22,4 +22,4 @@ COPY --from=build /app/bin/mint /mint
 
 EXPOSE 8080
 
-ENTRYPOINT [ "./echo" ]
+ENTRYPOINT [ "./mint" ]
