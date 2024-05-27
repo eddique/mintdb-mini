@@ -8,9 +8,11 @@ SOURCES = $(wildcard $(SRC_DIR)/*.c)
 OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(OBJ_DIR)/%.o, $(SOURCES))
 EXECUTABLE = $(BIN_DIR)/mint
 
-all: $(EXECUTABLE)
+all: dirs $(EXECUTABLE)
 	strip $(EXECUTABLE)
 
+dirs:
+	mkdir -p $(OBJ_DIR) $(BIN_DIR)
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) $^ $(LDFLAGS) -o $@
 
