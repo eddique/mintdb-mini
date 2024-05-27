@@ -1,5 +1,11 @@
 {
     "files.associations": {
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "errno.h": "c",
+        "dirent.h": "c",
+        "unistd.h": "c",
+        "sstream": "c",
+        "__bit_reference": "c",
+        "string": "c"
     }
 }

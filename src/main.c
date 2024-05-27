@@ -1,8 +1,50 @@
 #include "serve.h"
-#include "fs.h"
-#include "emb.h"
 #include <stdio.h>
 #include <unistd.h>
+
+#include "heap.h"
+
+void test_heap()
+{
+    int capacity = 5;
+    float distances[] = {0.768, 0.239, 0.492, 0.857, 0.315, 0.604, 0.142, 0.981, 0.027, 0.463, 0.716, 0.201, 0.894, 0.356, 0.673, 0.028, 0.915, 0.739, 0.482, 0.206};
+    MaxHeap *heap = create_heap(capacity);
+    for (int i = 0; i < sizeof(distances) / sizeof(float); i++)
+    {
+        Data *data = (Data *)malloc(sizeof(Data));
+        if (heap->size < heap->capacity)
+        {
+            push(heap, distances[i], data);
+        }
+        else
+        {
+            HeapNode *node = peek(heap);
+            if (distances[i] < node->cosine_distance)
+            {
+                HeapNode *top = pop(heap);
+                free(top->data);
+                free(top);
+                push(heap, distances[i], data);
+            }
+        }
+    }
+    float documents[heap->capacity];
+    int index = heap->capacity - 1;
+    HeapNode *node = pop(heap);
+    while (node != NULL)
+    {
+        documents[index] = node->cosine_distance;
+        index--;
+        printf("pop: %f\n", node->cosine_distance);
+        node = pop(heap);
+    }
+    printf("cosine_distances:\n");
+    for (int i = 0; i <  sizeof(documents)/sizeof(float); i ++)
+    {
+        printf("%f\n", documents[i]);
+    }
+    free_heap(heap);
+}
 
 int main(int argc, char *argv[])
 {
@@ -29,36 +71,8 @@ int main(int argc, char *argv[])
     {
         dir_path = "mint.db";
     }
-    
-    printf("creating directory %s\n", dir_path);
-    make_dir(dir_path);
-    char file_path[256];
-    snprintf(file_path, sizeof(file_path),"%s/%s", dir_path, "hello_world.txt");
-    printf("reading file: %s\n", file_path);
-    read_file(file_path);
+    test_heap();
+    init_fs(dir_path);
     run(port);
-    // char data[] = "34695ed9-4cae-429b-ad5d-69460d780ed9|Hello, World!|Some content here!|https://google.com|[0.3,0.1,0.2,0.3]";
-    // snprintf(file_path, sizeof(file_path),"%s/%s", dir_path, "data2.bin");
-    // parse_and_write_to_file(file_path, data);
-    Data *file_data = malloc(sizeof(Data));
-    Data *file_data2 = malloc(sizeof(Data));
-    read_document_from_file("data/tables/users/data.bin", file_data);
-    if (file_data != NULL)
-    {
-        printf("id: %s\n", file_data->id);
-        printf("title: %s\n", file_data->title);
-        printf("content: %s\n", file_data->content);
-        printf("url: %s\n", file_data->url);
-        for (int i = 0; i < 4; i++)
-        {
-            printf("embedding position %d: %f\n", i, file_data->embeddings[i]);
-        }
-    }
-    read_document_from_file("data/tables/users/data2.bin", file_data2);
-    float distance = cosine_distance(file_data2->embeddings, file_data->embeddings, 4);
-    printf("cosine_distance: %f\n", distance);
-    free(file_data);
-    free(file_data2);
-    list_files(dir_path);
     return 0;
 }

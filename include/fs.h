@@ -1,33 +1,39 @@
 #ifndef mintdb_mini_fs_h
 #define mintdb_mini_fs_h
-#define MAX_FIELD_SIZE 256
 #define MAX_FILE_SIZE 10000
-#define EMBEDDING_SIZE 1536
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "common.h"
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <dirent.h>
+#include <ftw.h>
+#include <pthread.h>
+
+typedef struct Document Document;
+
+struct Document {
+    Data *data;
+    Document *next;
+};
 
 typedef struct {
-    char id[MAX_FIELD_SIZE];
-    char title[MAX_FIELD_SIZE];
-    char* content;
-    char url[MAX_FIELD_SIZE];
-    float embeddings[EMBEDDING_SIZE];
-} Data;
+    pthread_mutex_t mutex;
+    char tb[MAX_FIELD_SIZE];
+    Document *documents;
+} Cache;
 
+void init_fs(const char *path);
+void init_cache();
+int set_cache(const char *tb);
+void reset_cache();
+void free_cache();
+void write_doc(const char *tb, Data *document);
 void read_document_from_file(const char *path, Data *data);
-void parse_and_write_to_file(char *path, char *http_body);
-
 void make_dir(const char *path);
-void write_to_file(const char *filepath, const char *data, size_t data_size);
-void list_files(const char *path);
-char* read_file(const char* path);
+void print_titles();
+int rmrf(char *tb);
 
 #endif

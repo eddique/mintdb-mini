@@ -14,12 +14,12 @@ RUN mkdir -p bin obj
 
 RUN make
 
-RUN chmod +x /app/bin/echo
+RUN chmod +x /app/bin/mint
 
 FROM scratch
 
-COPY --from=build /app/bin/echo /echo
+COPY --from=build /app/bin/mint /mint
 
 EXPOSE 8080
 
-CMD [ "/echo" ]
+ENTRYPOINT [ "./echo" ]
