@@ -25,7 +25,7 @@ void print_titles()
 
 void init_fs(const char *base_path)
 {
-    printf("\x1b[38;5;50mcreating directory %s\x1b[0m\n", base_path);
+    printf("\x1b[38;5;50mcreating directory \"%s\"\x1b[0m\n", base_path);
     strcpy(base_data_path, base_path);
     snprintf(base_data_path, sizeof(base_data_path), "%s/%s", base_path, "ds/");
     make_dir(base_data_path);

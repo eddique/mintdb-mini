@@ -45,32 +45,37 @@
 //     }
 //     free_heap(heap);
 // }
-
-int main(int argc, char *argv[])
+void cli(int argc, char *argv[], int *port, char **dir_path)
 {
     int opt;
-    int port = 8080;
-    char *dir_path = NULL;
+
     while ((opt = getopt(argc, argv, "p:")) != -1)
     {
         switch (opt)
         {
         case 'p':
-            port = atoi(optarg);
+            *port = atoi(optarg);
             break;
         default:
-            fprintf(stderr, "Usage: %s [-p port]\n", argv[0]);
+            fprintf(stderr, "Usage: %s [-p port] data_path\n", argv[0]);
             exit(EXIT_FAILURE);
         }
     }
     if (optind < argc)
     {
-        dir_path = argv[optind];
+        *dir_path = argv[optind];
     }
     else
     {
-        dir_path = "mint.db";
+        *dir_path = "mint.db";
     }
+}
+
+int main(int argc, char *argv[])
+{
+    int port = 8080;
+    char *dir_path = NULL;
+    cli(argc, argv, &port, &dir_path);
     printf("\n\x1b[38;5;50mmintdb\x1b[0mmini\n\n");
     init_fs(dir_path);
     run(port);

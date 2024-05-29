@@ -15,11 +15,11 @@
 
 ```sh
 make
-./bin/mint data -p 8080
+./bin/mint -p 8080 data
 ```
 
 # Usage
 
 ```sh
-mint DATA_PATH -p PORT_NUMBER
+mint -p PORT_NUMBER DATA_PATH
 ```
