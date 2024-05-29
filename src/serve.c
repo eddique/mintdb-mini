@@ -1,5 +1,4 @@
 #include "serve.h"
-#include "router.h"
 
 int read_request(char *buffer, ssize_t bytes, Request *request)
 {

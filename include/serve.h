@@ -1,6 +1,8 @@
 #ifndef mintdb_mini_serve_h
 #define mintdb_mini_serve_h
 #include "common.h"
+#include "router.h"
+
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
