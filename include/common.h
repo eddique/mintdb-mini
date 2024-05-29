@@ -5,6 +5,7 @@
 #include <string.h>
 #define MAX_FIELD_SIZE 256
 #define EMBEDDING_SIZE 1536
+#define BUFFER_SIZE 8192
 
 typedef struct {
     char id[MAX_FIELD_SIZE];
@@ -13,5 +14,15 @@ typedef struct {
     char url[MAX_FIELD_SIZE];
     float embeddings[EMBEDDING_SIZE];
 } Data;
+
+typedef struct
+{
+    char line[BUFFER_SIZE];
+    char headers[BUFFER_SIZE];
+    int content_length;
+    char path[BUFFER_SIZE];
+    char method[8];
+    char *body;
+} Request;
 
 #endif

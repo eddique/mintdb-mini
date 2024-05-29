@@ -20,5 +20,8 @@ static float magnitude(float a[], int size) {
 }
 
 float cosine_distance(float a[], float b[], int size) {
-    return 1 - (dot_product(a, b, size) / (magnitude(a, size) * magnitude(b, size)));
+    float dot = dot_product(a, b, size);
+    float mag_a = magnitude(a, size);
+    float mag_b = magnitude(b, size);
+    return 1 - (dot / (mag_a * mag_b));
 }

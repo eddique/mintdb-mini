@@ -35,7 +35,7 @@ int read_request(char *buffer, ssize_t bytes, Request *request)
 
     char *body_start = headers_end + 4;
     ssize_t received = bytes - (body_start - buffer);
-    request->body = malloc(request->content_length + 1);
+    request->body = (char *)malloc(request->content_length + 1);
     if (request->body == NULL)
     {
         perror("unable to malloc request body");
@@ -102,8 +102,8 @@ int parse_request(int client_socket, Request *req)
 void *handle_client(void *arg)
 {
     int client_socket = *(int *)arg;
-    char response[BUFFER_SIZE];
-    Request *req = malloc(sizeof(Request));
+    char *response = NULL;
+    Request *req = (Request *)malloc(sizeof(Request));
     if (req == NULL)
     {
         perror("unable to malloc request");
@@ -114,16 +114,32 @@ void *handle_client(void *arg)
         free(req->body);
         free(req);
         char message[] = "Invalid HTTP Request";
-        snprintf(response, BUFFER_SIZE - 1, HTTP_INTERNAL_ERROR, "text/plain; charset=UTF-8", strlen(message), message);
+        char *content_type = "text/plain; charset=UTF-8";
+        write_response(&response, HTTP_INTERNAL_ERROR, content_type, message);
         send(client_socket, response, strlen(response), 0);
+        
         close(client_socket);
+        free(response);
+        response = NULL;
         return NULL;
     }
-    route(req, response);
+    route(req, &response);
     printf("\n\n-----RESPONSE-----\n\n\x1b[38;5;50m%s\x1b[0m\n\n------------------\n\n", response);
-    send(client_socket, response, strlen(response), 0);
+    size_t total_sent = 0;
+    size_t response_length = strlen(response);
+    while (total_sent < response_length)
+    {
+        ssize_t sent = send(client_socket, response + total_sent, response_length - total_sent, 0);
+        if (sent == -1)
+        {
+            break;
+        }
+        total_sent += sent;
+    }
     free(req->body);
     free(req);
+    free(response);
+    response = NULL;
     close(client_socket);
     return NULL;
 }
@@ -154,7 +170,7 @@ void run(int port)
         perror("listen");
         exit(EXIT_FAILURE);
     }
-    printf("listening on http://localhost:%d\n", port);
+    printf("\x1b[38;5;50mlistening on http://localhost:%d\x1b[0m\n", port);
     while (1)
     {
         struct sockaddr_in client_addr;
