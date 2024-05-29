@@ -14,8 +14,8 @@ void free_heap(MaxHeap *heap)
 {
     for (int i = 0; i < heap->size; i++)
     {
-        free(heap->nodes[i]->data);
-        heap->nodes[i]->data = NULL;
+        // free(heap->nodes[i]->data);
+        // heap->nodes[i]->data = NULL;
         free(heap->nodes[i]);
         heap->nodes[i] = NULL;
     }
