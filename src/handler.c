@@ -14,7 +14,7 @@ const char *HTTP_NOT_FOUND =
     "%s";
 const char *HTTP_NO_CONTENT =
     "HTTP/1.1 204 No Content\r\n"
-    "Content-Length: %lu\r\n"
+    "Content-Length: 0\r\n"
     "\r\n";
 const char *HTTP_INTERNAL_ERROR =
     "HTTP/1.1 500 INTERNAL ERROR\r\n"
@@ -74,7 +74,7 @@ void dev_print_handler(Request *req, char **res)
     set_cache("test_data");
     print_titles();
     reset_cache();
-    write_response(res, HTTP_NO_CONTENT, "", "");
+    write_response(res, HTTP_NO_CONTENT, NULL, NULL);
 }
 void health_handler(Request *req, char **res)
 {
@@ -102,7 +102,7 @@ void drop_handler(Request *req, char **res)
         write_response(res, HTTP_NOT_FOUND, content_type, message);
         return;
     }
-    write_response(res, HTTP_NO_CONTENT, "", "");
+    write_response(res, HTTP_NO_CONTENT, NULL, NULL);
 
 }
 void upsert_handler(Request *req, char **res)
@@ -145,6 +145,12 @@ void query_handler(Request *req, char **res)
 
 void write_response(char **res, const char * http_header, char *content_type, char *body)
 {
+    if (strcmp(http_header, HTTP_NO_CONTENT) == 0) {
+        ssize_t response_size = strlen(http_header) + 1;
+        *res = (char *)malloc(response_size * sizeof(char));
+        snprintf(*res, response_size, "%s", http_header);
+        return;
+    }
     ssize_t response_size = r_size(http_header, content_type, body);
     *res = (char *)malloc(response_size * sizeof(char));
     snprintf(*res, response_size - 1, http_header, content_type, strlen(body), body);

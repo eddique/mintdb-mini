@@ -209,20 +209,27 @@ void query_embeddings(char *table, float *embeddings, char *response)
             }
             document = document->next;
         }
-
-        sprintf(response, "{\"results\":[");
-        while (heap->size > 0)
+        HeapNode **nodes = (HeapNode **)malloc(heap->capacity * sizeof(HeapNode *));
+        int index = heap->capacity - 1;
+        HeapNode *node = pop(heap);
+        while (node != NULL)
         {
-            HeapNode *node = pop(heap);
-            Data *data = node->data;
+            nodes[index--] = node;
+            node = pop(heap);
+        }
+        sprintf(response, "{\"results\":[");
+        for (int i = 0; i < heap->capacity; i++)
+        {
+            Data *data = nodes[i]->data;
+            HeapNode *node = nodes[i];
             sprintf(response + strlen(response),
                     "{\"id\": \"%s\", \"title\": \"%s\", \"content\": \"%s\", \"url\": \"%s\", \"distance\": %.7f},",
                     data->id, data->title, data->content, data->url, node->cosine_distance);
-
-            free(node);
         }
+
         response[strlen(response) - 1] = ']';
         strcat(response, "}");
+        free(nodes);
         free_heap(heap);
     }
 }
