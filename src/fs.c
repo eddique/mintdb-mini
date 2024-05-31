@@ -12,12 +12,15 @@ void print_titles()
     if (cache != NULL)
     {
         pthread_mutex_lock(&cache->mutex);
-        Document *doc = cache->documents;
-        while (doc != NULL)
+        if (strlen(cache->tb) > 0)
         {
-            Document *next = doc->next;
-            printf("Cache Loaded - document: %s\n", doc->data->title);
-            doc = next;
+            Document *doc = cache->documents;
+            while (doc != NULL)
+            {
+                Document *next = doc->next;
+                printf("Cache Loaded - document: %s\n", doc->data->title);
+                doc = next;
+            }
         }
         pthread_mutex_unlock(&cache->mutex);
     }
@@ -35,8 +38,17 @@ char *cache_tb()
 {
     if (cache != NULL)
     {
+        char *tb;
         pthread_mutex_lock(&cache->mutex);
-        char *tb = strdup(cache->tb);
+        if (strlen(cache->tb) > 0)
+        {
+
+            tb = strdup(cache->tb);
+        }
+        else
+        {
+            tb = "";
+        }
         pthread_mutex_unlock(&cache->mutex);
         return tb;
     }
@@ -48,9 +60,25 @@ void reset_cache()
     if (cache != NULL)
     {
         pthread_mutex_lock(&cache->mutex);
-        memset(cache->tb, 0, MAX_FIELD_SIZE);
-        free(cache->documents);
-        cache->documents = NULL;
+        if (strlen(cache->tb) > 0)
+        {
+
+            memset(cache->tb, 0, MAX_FIELD_SIZE);
+            Document *node = cache->documents;
+            Document *next;
+            while (node != NULL)
+            {
+                next = node->next;
+                if (node->data != NULL)
+                {
+                    free(node->data->content);
+                    free(node->data->embeddings);
+                    free(node->data);
+                }
+                free(node);
+                node = next;
+            }
+        }
         pthread_mutex_unlock(&cache->mutex);
     }
 }
@@ -60,18 +88,20 @@ void free_cache()
     if (cache != NULL)
     {
         pthread_mutex_lock(&cache->mutex);
-        Document *doc = cache->documents;
-        while (doc != NULL)
+        Document *node = cache->documents;
+        Document *next;
+        while (node != NULL)
         {
-            Document *next = doc->next;
-            free(doc->data);
-            free(doc);
-            doc = next;
+            next = node->next;
+            free(node->data->content);
+            free(node->data->embeddings);
+            free(node->data);
+            free(node);
+            node = next;
         }
         pthread_mutex_unlock(&cache->mutex);
         pthread_mutex_destroy(&cache->mutex);
         free(cache);
-        cache = NULL;
     }
 }
 void write_doc(const char *tb, Data *document)
@@ -113,12 +143,12 @@ void write_document(const char *tb, Data *document)
     FILE *file = fopen(file_path, "w");
     if (file != NULL)
     {
-        char embedding[EMBEDDING_SIZE * 24 + 2];
+        char *embedding = (char *)malloc((EMBEDDING_SIZE * 38 + 2) * sizeof(char));
         char *p = embedding;
         *p++ = '[';
         for (int i = 0; i < EMBEDDING_SIZE; i++)
         {
-            int written = snprintf(p, 24, "%.18f,", document->embeddings[i]);
+            int written = snprintf(p, 38, "%.32f,", document->embeddings[i]);
             p += written;
         }
         *(p - 1) = ']';
@@ -138,6 +168,7 @@ void write_document(const char *tb, Data *document)
 
             fwrite(data, sizeof(char), data_len + 1, file);
             free(data);
+            free(embedding);
         }
         fclose(file);
     }
@@ -177,7 +208,7 @@ void make_dir(const char *path)
         exit(EXIT_FAILURE);
     }
 }
-void query_embeddings(char *table, float *embeddings, char *response)
+void query_embeddings(char *table, double *embeddings, char *response)
 {
     if (cache != NULL)
     {
@@ -192,7 +223,7 @@ void query_embeddings(char *table, float *embeddings, char *response)
         Document *document = cache->documents;
         while (document != NULL)
         {
-            float distance = cosine_distance(embeddings, document->data->embeddings, EMBEDDING_SIZE);
+            double distance = cosine_distance(embeddings, document->data->embeddings, EMBEDDING_SIZE);
             if (heap->size < heap->capacity)
             {
                 push(heap, distance, document->data);
@@ -249,7 +280,7 @@ void read_document_from_file(const char *path, Data *data)
     fstat(fileno(file), &st);
     size_t file_size = st.st_size;
     char *file_contents = (char *)malloc(file_size + 1);
-    
+
     fread(file_contents, sizeof(char), file_size, file);
     file_contents[file_size] = '\0';
     char *token = strtok(file_contents, "|");
@@ -274,7 +305,7 @@ void read_document_from_file(const char *path, Data *data)
         {
             break;
         }
-        data->embeddings[i] = atof(token);
+        data->embeddings[i] = strtod(token, NULL);
         token = NULL;
     }
     free(file_contents);
@@ -307,7 +338,6 @@ int set_cache(const char *tb)
     pthread_mutex_lock(&cache->mutex);
     strcpy(cache->tb, tb);
     Document *lastDoc = NULL;
-    // TODO: Something is going on here for it_emb
     while ((entry = readdir(dir)) != NULL)
     {
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
@@ -326,6 +356,7 @@ int set_cache(const char *tb)
         if (S_ISREG(statbuf.st_mode) && strstr(entry->d_name, ".bin") != NULL)
         {
             Data *data = (Data *)malloc(sizeof(Data));
+            data->embeddings = (double *)malloc(EMBEDDING_SIZE * sizeof(double));
             Document *doc = (Document *)malloc(sizeof(Document));
             read_document_from_file(full_path, data);
             doc->data = data;

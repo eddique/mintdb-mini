@@ -30,7 +30,7 @@ void init_cache();
 int set_cache(const char *tb);
 void reset_cache();
 void free_cache();
-void query_embeddings(char *table, float *embeddings, char *response);
+void query_embeddings(char *table, double *embeddings, char *response);
 void write_doc(const char *tb, Data *document);
 void write_document(const char *tb, Data *document);
 void read_document_from_file(const char *path, Data *data);

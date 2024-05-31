@@ -10,9 +10,9 @@
 typedef struct {
     char id[MAX_FIELD_SIZE];
     char title[MAX_FIELD_SIZE];
-    char* content;
+    char *content;
     char url[MAX_FIELD_SIZE];
-    float embeddings[EMBEDDING_SIZE];
+    double *embeddings;
 } Data;
 
 typedef struct

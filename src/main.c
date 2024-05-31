@@ -67,7 +67,7 @@ void cli(int argc, char *argv[], int *port, char **dir_path)
     }
     else
     {
-        *dir_path = "mint.db";
+        *dir_path = "data";
     }
 }
 

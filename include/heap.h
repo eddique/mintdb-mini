@@ -3,7 +3,7 @@
 #include "common.h"
 
 typedef struct {
-    float cosine_distance;
+    double cosine_distance;
     Data *data;
 } HeapNode;
 
@@ -17,5 +17,5 @@ MaxHeap *create_heap(int capacity);
 void free_heap(MaxHeap *heap);
 HeapNode *peek(MaxHeap *heap);
 HeapNode *pop(MaxHeap *heap);
-void push(MaxHeap *heap, float cosine_distance, Data *data);
+void push(MaxHeap *heap, double cosine_distance, Data *data);
 #endif

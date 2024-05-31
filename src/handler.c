@@ -47,11 +47,13 @@ void dev_upsert_handler(Request *req, char **res)
     if (tb == NULL)
         tb = "default";
     Data *data = (Data *)malloc(sizeof(Data));
+    data->embeddings = (double *)malloc(EMBEDDING_SIZE * sizeof(double));
     // TODO: Handler error
     parse_json_document(req->body, data);
     printf("upserting idx: %s -> document: %s\n", tb, data->title);
     write_doc(tb, data);
     free(data->content);
+    free(data->embeddings);
     free(data);
     char message[] = "Got it!";
     char content_type[] = "text/plain; charset=UTF-8";
@@ -71,6 +73,9 @@ void dev_query_handler(Request *req, char **res)
 }
 void dev_print_handler(Request *req, char **res)
 {
+    // TODO: setting cache to invalid directory causes double free
+    // in reset_cache free(node->data);
+    // Checking if tb is > 0, not great though
     set_cache("test_data");
     print_titles();
     reset_cache();
@@ -113,12 +118,14 @@ void upsert_handler(Request *req, char **res)
     tb = strtok(NULL, "/");
     if (tb == NULL)
         tb = "default";
-    Data *data = malloc(sizeof(Data));
+    Data *data = (Data *)malloc(sizeof(Data));
+    data->embeddings = (double *)malloc(EMBEDDING_SIZE * sizeof(double));
     // TODO: Handle error
     if (parse_json_document(req->body, data))
         printf("invalid json!\n");
     write_document(tb, data);
     free(data->content);
+    free(data->embeddings);
     free(data);
     char message[] = "Got it!";
     char content_type[] = "text/plain; charset=UTF-8";
@@ -135,11 +142,13 @@ void query_handler(Request *req, char **res)
         tb = "default";
     char *results = (char *)malloc(BUFFER_SIZE * 2 * sizeof(char));
     Embedding *emb = (Embedding *)malloc(sizeof(Embedding));
+    emb->embeddings = (double *)malloc(EMBEDDING_SIZE * sizeof(double));
     parse_embedding(req->body, emb);
     query_embeddings(tb, emb->embeddings, results);
     char content_type[] = "application/json; charset=UTF-8";
     write_response(res, HTTP_OK, content_type, results);
     free(results);
+    free(emb->embeddings);
     free(emb);
 }
 

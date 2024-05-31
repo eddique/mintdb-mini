@@ -3,7 +3,7 @@
 #include "common.h"
 
 typedef struct {
-    float embeddings[EMBEDDING_SIZE];
+    double *embeddings;
 } Embedding;
 
 int parse_json_document(char *json, Data *data);
