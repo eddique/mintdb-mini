@@ -108,7 +108,7 @@ int parse_json_document(char *json, Data *data)
         for (int i = 0; i < EMBEDDING_SIZE; i++)
         {
             char *endptr;
-            float value = strtof(embedding_key, &endptr);
+            double value = strtod(embedding_key, &endptr);
             if (embedding_key == endptr)
                 break;
             data->embeddings[i] = value;
@@ -140,9 +140,10 @@ int parse_embedding(char *json, Embedding *emb)
         {
 
             char *endptr;
-            float value = strtof(embedding_key, &endptr);
+            double value = strtod(embedding_key, &endptr);
             if (embedding_key == endptr)
                 break;
+            // printf("emb value: %f\n", value);
             emb->embeddings[i] = value;
             embedding_key = endptr;
             if (*embedding_key == ',')

@@ -3,6 +3,11 @@
 MaxHeap *create_heap(int capacity)
 {
     MaxHeap *heap = (MaxHeap *)malloc(sizeof(MaxHeap));
+    if (heap == NULL)
+    {
+        perror("unable to alllocate max heap");
+        exit(EXIT_FAILURE);
+    }
     heap->size = 0;
     heap->capacity = capacity;
     heap->nodes = (HeapNode **)malloc(capacity * sizeof(HeapNode *));
@@ -59,7 +64,7 @@ void heapify(MaxHeap *heap, int idx)
     }
 }
 
-void push(MaxHeap *heap, float cosine_distance, Data *data)
+void push(MaxHeap *heap, double cosine_distance, Data *data)
 {
     if (heap->size == heap->capacity)
     {
