@@ -49,7 +49,16 @@ void dev_upsert_handler(Request *req, char **res)
     Data *data = (Data *)malloc(sizeof(Data));
     data->embeddings = (double *)malloc(EMBEDDING_SIZE * sizeof(double));
     // TODO: Handler error
-    parse_json_document(req->body, data);
+    if (parse_json_document(req->body, data))
+    {
+        char content_type[] = "text/plain; charset=UTF-8";
+        char message[] = "error upserting 😮";
+        write_response(res, HTTP_INTERNAL_ERROR, content_type, message);
+        free(data->content);
+        free(data->embeddings);
+        free(data);
+        return;
+    }
     printf("upserting idx: %s -> document: %s\n", tb, data->title);
     write_doc(tb, data);
     free(data->content);
@@ -57,7 +66,7 @@ void dev_upsert_handler(Request *req, char **res)
     free(data);
     char message[] = "Got it!";
     char content_type[] = "text/plain; charset=UTF-8";
-    write_response(res, HTTP_OK, content_type, message);    
+    write_response(res, HTTP_OK, content_type, message);
 }
 void dev_query_handler(Request *req, char **res)
 {
@@ -108,7 +117,6 @@ void drop_handler(Request *req, char **res)
         return;
     }
     write_response(res, HTTP_NO_CONTENT, NULL, NULL);
-
 }
 void upsert_handler(Request *req, char **res)
 {
@@ -130,7 +138,6 @@ void upsert_handler(Request *req, char **res)
     char message[] = "Got it!";
     char content_type[] = "text/plain; charset=UTF-8";
     write_response(res, HTTP_OK, content_type, message);
-    
 }
 void query_handler(Request *req, char **res)
 {
@@ -152,9 +159,10 @@ void query_handler(Request *req, char **res)
     free(emb);
 }
 
-void write_response(char **res, const char * http_header, char *content_type, char *body)
+void write_response(char **res, const char *http_header, char *content_type, char *body)
 {
-    if (strcmp(http_header, HTTP_NO_CONTENT) == 0) {
+    if (strcmp(http_header, HTTP_NO_CONTENT) == 0)
+    {
         ssize_t response_size = strlen(http_header) + 1;
         *res = (char *)malloc(response_size * sizeof(char));
         snprintf(*res, response_size, "%s", http_header);

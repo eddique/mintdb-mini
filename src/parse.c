@@ -21,7 +21,7 @@ int parse_json_document(char *json, Data *data)
     }
     else
     {
-        printf("request body missing key 'id\n");
+        printf("request body missing key 'id'\n");
         return 1;
     }
 
